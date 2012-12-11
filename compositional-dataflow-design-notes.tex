@@ -1,0 +1,76 @@
+\documentclass{article}
+\usepackage{graphicx}
+%\usepackage[a4paper]{geometry}
+\usepackage{fullpage}
+\usepackage{listings}
+\usepackage{color}
+
+\lstset{
+basicstyle=\ttfamily,
+language=C++,
+frame=single,
+tabsize=2,
+keywordstyle=\color{blue},
+stringstyle=\color{mauve},
+breaklines=true,
+escapeinside={\%*}{*},
+showspaces=false,
+showstringspaces=false
+}
+
+
+\begin{document}
+\title{Compositional Dataflow}
+\date{}
+\maketitle
+\section*{Abstract Object}
+\noindent
+The abstract object is a basic abstraction of symbolic values and
+memory locations implemented by the dataflow framework. The
+AbstractObject has three main types. 
+\begin{itemize}
+\item MemLocObject 
+\item ValueObject 
+\item CodeLocObject
+\end{itemize}
+The AbstractObject interface requires two main functionalities to be
+implemented by its derived objects
+\begin{lstlisting}
+bool  mayEqual(AbstractObjectPtr, PartEdgePtr)
+bool mustEqual(AbstractObjectPtr, PartEdgePtr)
+\end{lstlisting}
+\emph{sources: abstract\_object.h, abstract\_object.C}
+\subsection*{MemLocObject}
+MemLocObject is an abstraction for memory locations. It has four basic
+types (derived objects) identified based on the memory organization.
+\begin{description}
+\item Scalar: no memory organization
+\item LabeledAggregate: struct/class
+\item Pointer: objects that may point to others
+\item Array: contiguous sequences of memory objects
+\end{description}
+
+\subsection*{ValueObject}
+\subsection*{CodeLocObject}
+
+\section*{Composer}
+The Composer serves as the intermediary between different analyses.  A
+client analysis queries the composer and the composer responds by
+returning appropriate abstract object from previously executed
+analyses. The composer implements the following interface.
+
+\begin{lstlisting}
+ValueObjectPtr Expr2Val(SgNode*, PartEdgePtr, ComposedAnalysis*)
+ValueObjectPrt OperandExpr2Val(SgNode* n, SgNode* operand, PartEdgePtr, ComposedAnalysis*)
+MemLocObjectPtrPair Expr2MemLoc(SgNode*, PartEdgePtr, ComposedAnalysis*)
+MemLocObjectPtrPair OperandExpr2MemLoc(SgNode* n, SgNode* operand, PartEdgePtr, ComposedAnalysis*)
+CodeLocObjectPtrPair Expr2CodeLoc(SgNode*, PartEdgePtr, ComposedAnalysis*)
+PartPtr GetFunctionStartPart(const Function&, ComposedAnalysis*)
+PartPtr GetFunctionEndPart(const Function&, ComposedAnalysis*)
+\end{lstlisting}
+
+ChainComposer implements the functionality of the composer.
+
+\emph{sources: compose.h/compose.C}
+
+\end{document}
