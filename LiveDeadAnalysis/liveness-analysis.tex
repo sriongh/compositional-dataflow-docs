@@ -1,0 +1,65 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{fullpage}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{amsmath}
+
+\title{Live Dead Memory Analysis}
+\date{}
+\begin{document}
+\maketitle
+
+\section{Definition}
+Liveness of a memory is a useful property to be discovered and it is helpful in optimal register allocation. Liveness for memory locations are associated with program points. In the context of the dataflow analysis, a program point can be thought of as a control-flow graph node. Before we define liveness, it is useful to look at the operations on memory locations. 
+In the context of Liveness analysis, two operations on memory locations are possible.
+\begin{itemize}
+\item def:  It is the action of writing to a memory location using statements or expressions permitted by the language
+\item use: It is the action of reading from a memory location using expressions allowed in the language.
+\end{itemize}
+Liveness is determined by the following two rules.
+\begin{enumerate}
+\item A memory region is live if it is used in a statement or expression. For example, variables and memory reference expression occurring on rhs of an assignment ($=$) operator. 
+\item A memory region is live at program point \texttt{l} if it is also live at the program point \texttt{l+1}.
+\end{enumerate}
+Rule 1 simply states that if a memory location is used at a program point, then it is likely to be used again before the end of the program and therefore the memory location is live from this program point. The semantics of Rule 1 as described in \cite{pfenning-lec-liveness} is shown below.
+\begin{equation*}
+l: x = y \oplus z \over live(l, y) \land live(l, z)
+\end{equation*}
+Rule 2 tries identify an earlier program point \texttt{l} up to which a memory location may be live. It has an exception. A memory location say \texttt{x} is live at program point \texttt{l} if it is also live at program point \texttt{l+1} provided it is not defined at location \texttt{l+1}. The semantics of Rule 2 as described in \cite{pfenning-lec-liveness} is shown below.
+\begin{eqnarray*}
+live(l+1, u), \\ l: x = y \oplus z,  \\ u \neq x \over live(l, u)
+\end{eqnarray*}
+\section{Liveness as Dataflow Analysis}
+Liveness is implemented as backward dataflow analysis. It is useful to think about the analysis in terms of set operations. A set \texttt{LIVE(l)} consisting of memory locations that are live at \texttt{l} is associated with each program point \texttt{l}. Transfer function for \texttt{l} add or remove elements from the set \texttt{LIVE(l)}. Information from \texttt{l+1} to \texttt{l} is propagated by meet using set union operation. The following equations defines the outline for any transfer function.
+
+\begin{equation}
+\label{eq1}
+\forall x, l:  use(x,l) \to LIVE(l) \cup \{x\}
+\end{equation}
+\begin{equation}
+\label{eq2}
+meet(l1, l2) = LIVE(l1) \cup LIVE(l2)
+\end{equation}
+\begin{equation}
+\label{eq3}
+\forall x,l: def(x,l) \to LIVE(l) - \{x\}
+\end{equation}
+
+The analysis proceeds in the following order. 
+\begin{itemize}
+\item The \texttt{meet} operation is applied first to transfer the information from \texttt{l+1} to \texttt{l}. This corresponds to equation \ref{eq2}. 
+\item The transfer function is applied following the \texttt{meet} operation. The transfer functions modifies the set according to equation \ref{eq1} and \ref{eq3}. 
+\item The modified information is propagated to the next node and the analysis continues in the same manner as before. 
+\end{itemize}
+The analysis starts with empty set at the leaf of the control-flow graph and terminates on reaching a fix point. It maintains the set \texttt{LIVE(l)} for each control-flow graph node and they contain the information as computed by the analysis.
+
+\begin{thebibliography}{1}
+\bibitem{pfenning-lec-liveness}
+Frank Pfenning,
+\href{http://www.cs.cmu.edu/~fp/courses/15411-f08/lectures/04-liveness.pdf} {Lecture Notes on Liveness Analysis}
+
+\end{thebibliography}
+
+\end{document}

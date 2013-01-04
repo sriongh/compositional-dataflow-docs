@@ -21,6 +21,24 @@ showstringspaces=false
 \title{Design of Pointer and Array Memory Objects}
 \date{}
 \maketitle
+\section{Compositional Analysis}
+\begin{figure*}[h!]
+\center
+\includegraphics[width=6in]{mot_ex_chain.pdf}
+\caption{Application of analysis chain to example program}
+\label{fig:mot_ex_chain}
+\end{figure*}
+
+Figure~\ref{fig:mot_ex_chain} presents a simple application that requires a complex analysis account for all if its properties.
+To show that it must print 10 an analysis must propagate the constant values of \texttt{x} and \texttt{y}, eliminate the dead branch of the \texttt{if} statement, propagate the points-to information from the remaining branch to the \texttt{print} operation and finally perform more constant propagation to connect the memory location of \texttt{*p} with 5 and conclude that \texttt{*p+5} is 10.
+Although it is possible to perform this inference via a single integrated analysis, such monolithic analysis development is not cost-effective since it is difficult for more than a few people to contribute to the work.
+As such, it is necessary to divide the overall analysis problem into multiple task-specific sub-analyses written by different people in the same or different group and somehow combine their results.
+The individual analyses required to analyze this example are well known (constant propagation, dead path elimination and points-to analysis) and there exist many algorithms and implementations for these tasks.
+Deployment of these analyses on real applications requires techniques to combine different types of analyses or even multiple implementations of the same analysis type into a single system.
+The compositional framework allows analyses to be composed to leverage their results.
+
+
+
 \section{Motivation}
 Consider the following simple program involving pointer dereferencing expressions.
 \lstset{
